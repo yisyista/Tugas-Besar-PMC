@@ -114,7 +114,7 @@ void inputData(){
     temp->next=NULL;
 }
 
-void initial_implicants(struct Node* ptr)       //initializing each term as a prime implicant
+void initial_implicants(struct Node* ptr)       //inisialisasi tiap minterm sebagai prime implicants
 {
     struct Node* temp;
     temp=ptr;
@@ -125,12 +125,6 @@ void initial_implicants(struct Node* ptr)       //initializing each term as a pr
     }
 }
 
-/*
-//
-void initial_func(){
-while
-}
-*/
 
 //Fungsi Search Index dari Nilai Minimum
 int searchIdxMin(struct Node* head){
@@ -689,7 +683,7 @@ void finalNode()          //in this function all the terms in the minimized expr
         }
         temp=temp->next=(struct Node*)malloc(sizeof(struct Node));
         i++;
-        c++;
+        //c++;
     }
     temp->next=NULL;
 }
