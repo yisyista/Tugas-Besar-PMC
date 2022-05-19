@@ -34,16 +34,16 @@ int main()
 {
     int i,j,k,x;
     struct Node* temp;
-    printf("\nEnter the number of variables : ");       //no. of variables and minterms are recorded
+    printf("\nMasukkan jumlah variabel : ");       //no. of variables and minterms are recorded
     scanf("%d",&var);
-    printf("\nEnter the number of minterms : ");
+    printf("\nMasukkan jumlah minterms: ");
     scanf("%d",&min);
     i=min-1;
 
     temp=(struct Node*)malloc(sizeof(struct Node));
     root=temp;
 
-    printf("\nEnter the minterms one by one\n\n");
+    printf("\nMasukkan minterms\n\n");
     scanf("%d",&temp->data[0]);                     //first minterm is stored
     j=temp->data[0];
     temp->sumOne=0;
@@ -99,7 +99,7 @@ int main()
         groupMore();
     }
     save->right=NULL;           //storing null value in link field of list storing prime implicants
-    printf("No pairs formed hence no further calculation required\n\n");
+    printf("Kalkulasi selesai\n\n");
     delNode(improot);
     reduce();
     showImpli();
@@ -201,7 +201,8 @@ void showColumn()     //for displaying the various column with pairings
     int i,j=min;
     struct Node* temp;
     temp=root;
-    printf("\n\nColumn #%d\n\n\n",number);          //number tells us which column is being printed
+    printf("\n\n  Kolom ke-%d\n",number); //number tells us which column is being printed
+    printf("--------------\n\n");
     while(temp->right!=NULL)
     {
         printf("%d\t",temp->data[0]);
@@ -245,7 +246,8 @@ void groupMore()    //grouping based on difference in binary notation
     }
     temp=root;
     initial_implicants(root);
-    printf("\n\nColumn #%d\n\n\n",number);
+    printf("\n\n  Kolom ke-%d\n",number); //number tells us which column is being printed
+    printf("--------------\n\n");
     while(temp!=NULL)
     {
         next=temp->right;
@@ -339,7 +341,7 @@ void showImpli()       //displays the implicants
     int i=0;
     struct Node* temp;
     temp=improot;
-    printf("\n\nThe prime implicants are:- \n\n");
+    printf("\n\nPrime Implicants : \n\n");
     while(temp!=NULL)
     {
         i=0;
