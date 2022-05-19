@@ -59,7 +59,7 @@ void inputData(){
 
     printf("\nMasukkan minterms\n\n");
     scanf("%d",&temp->data[0]);                     //first minterm is stored
-    while(temp->data[0] > pow(2,var)){
+    while(temp->data[0] > pow(2,var)-1){
         printf("Input tidak valid\n");
         printf("\nMasukkan minterms\n\n");
         scanf("%d",&temp->data[0]);
@@ -86,7 +86,7 @@ void inputData(){
     {
         temp=temp->next=(struct Node*)malloc(sizeof(struct Node));
         scanf("%d",&temp->data[0]);
-        while(temp->data[0] > pow(2,var)){
+        while(temp->data[0] > pow(2,var)-1){
             printf("Input tidak valid\n");
             printf("\nMasukkan minterms\n\n");
             scanf("%d",&temp->data[0]);
@@ -260,7 +260,7 @@ void simplificationTab()     //for displaying the various column with pairings
     int i;
     struct Node* temp;
     temp=primeNode;
-    printf("\n\n  Tabel Penyederhanaan %d\n",number); //number tells us which column is being printed
+    printf("\n\n  Tabel Penyederhanaan %d\n",number); //number=taabel ke-
     printf("--------------------------\n\n");
     while(temp->next!=NULL)
     {
@@ -695,7 +695,7 @@ int main()
     printf("\t\t\t\t Program Minimasi Logika\n\t\t\tdengan Menerapkan Algoritma Quine McCluskey\n\n");
     printf("=======================================================================================\n");
     printf("Ketentuan Input:\n");
-    printf("1.Jumlah variabel maksimal sebanyak 26\n2. Jumlah minterms maksimal sebanyak 2^variabel\n");
+    printf("1. Jumlah variabel maksimal sebanyak 26\n2. Jumlah minterms maksimal sebanyak 2^variabel\n3. Elemen minterms tidak boleh bernilai lebih dari (2^variabel)-1\n");
     inputData();
     new = NULL;
     for(int o=0; o<min; o++){
