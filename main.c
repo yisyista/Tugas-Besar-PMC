@@ -4,50 +4,66 @@
 
 struct Node
 {
-    int data[257], bin[26], sumOne, isimplicant;
-    char var[26];
+    int data[257];  //nilai minterms
+    int bin[26];    //minterms dalam binary
+    int sumOne;     //jumlah angka 1 dalam binary sebuah minterms
+    int isimplicant;    //implicant atau tidak
+    char abc[26];   //variabel huruf dari minterms
     struct Node* next;
 };
 
-struct Node *root,*head,*improot,*save,*fin,*new;
-int var,min,number=1,columns=2,check=1,limit,tab[100][100],counter=0,essential[1000],t=0,no=0,minterms[1000];
-char a[26],b[26];       //
+//Global Variables
+struct Node *primeNode;
+struct Node *head;
+struct Node *impNode;
+struct Node *save;
+struct Node *last;
+struct Node *new;
+int var;
+int min;
+int number=1;
+int columns=2;
+int check=1;
+int maxMinterms;
+int tab[100][100];
+int counter=0;
+int essential[1000];
+int t=0;
+int no=0;
+int minterms[1000];
+char a[26];       //
 
-void groupby();          //
-void simplificationTab();            //
-void groupMore();           //
-void delNode(struct Node*);            //
-void showImpli();              //the implicants are displayed
-void initial_implicants(struct Node*);          //
-void reduce();                 //
-void initial_var();       //
-void changetoVar();             //
-void showTable();        //
-void finalResult();                //
-void implicant();        //
-void finalNode();     //
-void saveMinterms();      //
-int searchMin();
-int searchIdxMin(struct Node*);
-void deleteNode(struct Node**,int);
-void sort(struct Node**,struct Node**);
-
-
-int main()
-{
+//
+void inputData(){
     int i,j,k,x;
     struct Node* temp;
     printf("\nMasukkan jumlah variabel : ");       //no. of variables and minterms are recorded
     scanf("%d",&var);
+    while(var <= 0){
+        printf("Input tidak valid\n");
+        printf("\nMasukkan jumlah variabel : ");
+        scanf("%d",&var);
+    }
     printf("\nMasukkan jumlah minterms: ");
     scanf("%d",&min);
+    while(min > pow(2,var)){
+        printf("Input tidak valid\n");
+        printf("\nMasukkan jumlah minterms: ");
+        scanf("%d",&min);
+    }
+
     i=min-1;
 
     temp=(struct Node*)malloc(sizeof(struct Node));
-    root=temp;
+    primeNode=temp;
 
     printf("\nMasukkan minterms\n\n");
     scanf("%d",&temp->data[0]);                     //first minterm is stored
+    while(temp->data[0] > pow(2,var)){
+        printf("Input tidak valid\n");
+        printf("\nMasukkan minterms\n\n");
+        scanf("%d",&temp->data[0]);
+    }
     j=temp->data[0];
     temp->sumOne=0;
     x=var;
@@ -70,6 +86,11 @@ int main()
     {
         temp=temp->next=(struct Node*)malloc(sizeof(struct Node));
         scanf("%d",&temp->data[0]);
+        while(temp->data[0] > pow(2,var)){
+            printf("Input tidak valid\n");
+            printf("\nMasukkan minterms\n\n");
+            scanf("%d",&temp->data[0]);
+        }
         j=temp->data[0];
         temp->sumOne=0;
         x=var;
@@ -91,50 +112,25 @@ int main()
 
     }
     temp->next=NULL;
+}
 
-    new = NULL;
-    for(int o=0; o<min; o++){
-        sort(&new, &root);
-    }
-    root = new;
-
-    saveMinterms();
-    limit = minterms[min-1];
-    groupby();
-    simplificationTab();
-    delNode(root);
-    head=(struct Node*)malloc(sizeof(struct Node));
-    while(check>0)
+void initial_implicants(struct Node* ptr)       //initializing each term as a prime implicant
+{
+    struct Node* temp;
+    temp=ptr;
+    while(temp!=NULL)
     {
-        groupMore();
+        temp->isimplicant=1;
+        temp=temp->next;
     }
-    save->next=NULL;           //storing null value in link field of list storing prime implicants
-    printf("Kalkulasi selesai\n\n");
-    delNode(improot);
-    reduce();
-    showImpli();
-    initial_var();
-    showTable();
-    implicant();
-    finalNode();
-    delNode(fin);
-    changetoVar();
-    finalResult();
-    return 0;
 }
 
-//Fungsi Search Nilai Minimum dari Linked List
-int searchMin(struct Node* head){
-    int nilaiMin = 10000000;
-    while(head != NULL){
-        if (head->data[0] < nilaiMin){
-            nilaiMin = head->data[0];
-    }
-    head = head->next;
-
+/*
+//
+void initial_func(){
+while
 }
-    return nilaiMin;
-}
+*/
 
 //Fungsi Search Index dari Nilai Minimum
 int searchIdxMin(struct Node* head){
@@ -153,7 +149,7 @@ int searchIdxMin(struct Node* head){
 }
 
 //Fungsi Delete Node Linked List Berdasarkan Posisi Tertentu
-void deleteNode(struct Node **head, int pos)
+void delNode(struct Node **head, int pos)
 {
 
  if (*head == NULL){
@@ -197,7 +193,7 @@ void sort(struct Node **newHead, struct Node **oldHead){
     for(int m=0; m<var; m++){
         nodeBaru->bin[m] = temp->bin[m];
     }
-    deleteNode(oldHead, searchIdxMin(*oldHead));
+    delNode(oldHead, searchIdxMin(*oldHead));
 
     nodeBaru->next = NULL;
 
@@ -223,12 +219,11 @@ void print(struct Node* head){
     }
 }
 
-
-void saveMinterms()       //array to store all the minterms
+void arrMinterms()       //array to store all the minterms
 {
     int i=0;
     struct Node* temp;
-    temp=root;
+    temp=primeNode;
     while(temp!=NULL)
     {
         minterms[i]=temp->data[0];
@@ -239,10 +234,10 @@ void saveMinterms()       //array to store all the minterms
 
 void groupby()       //where the minterms are sortd according to the number of ones
 {
-    int i,count=0,j,k=0;
+    int i,j,k=0;
     struct Node *temp,*skip;
-    temp=save=root;
-    root=skip=(struct Node*)malloc(sizeof(struct Node));
+    temp=save=primeNode;
+    primeNode=skip=(struct Node*)malloc(sizeof(struct Node));
     for(i=0;i<=var;i++)
     {
         temp=save;
@@ -268,9 +263,9 @@ void groupby()       //where the minterms are sortd according to the number of o
 
 void simplificationTab()     //for displaying the various column with pairings
 {
-    int i,j=min;
+    int i;
     struct Node* temp;
-    temp=root;
+    temp=primeNode;
     printf("\n\n  Tabel Penyederhanaan %d\n",number); //number tells us which column is being printed
     printf("--------------------------\n\n");
     while(temp->next!=NULL)
@@ -287,7 +282,7 @@ void simplificationTab()     //for displaying the various column with pairings
     number++;
 }
 
-void delNode(struct Node* ptr)         //reducing the number of Nodes in a list with one extra Node
+void removeLast(struct Node* ptr)         //reducing the number of Nodes in a list with one extra Node
 {
     struct Node* temp;
     temp=ptr;
@@ -305,17 +300,17 @@ void groupMore()    //grouping based on difference in binary notation
     check=0;
     if(columns==2)      //for second column
     {
-        imp=improot=(struct Node*)malloc(sizeof(struct Node));
+        imp=impNode=(struct Node*)malloc(sizeof(struct Node));
         p=head;
     }
     else        //for other columns
     {
         imp=save;
-        root=head;
+        primeNode=head;
         p=head=(struct Node*)malloc(sizeof(struct Node));
     }
-    temp=root;
-    initial_implicants(root);
+    temp=primeNode;
+    initial_implicants(primeNode);
     printf("\n\n  Tabel Penyederhanaan %d\n",number); //number tells us which column is being printed
     printf("--------------------------\n\n");
     while(temp!=NULL)
@@ -380,12 +375,12 @@ void groupMore()    //grouping based on difference in binary notation
     p->next=NULL;
     if(check!=0)
     {
-        delNode(head);     //extra Node is deleted
+        removeLast(head);     //extra Node is deleted
     }
-    temp=root;
+    temp=primeNode;
     while(temp!=NULL)           //for selecting the prime implicants
     {
-        if(temp->isimplicant==1)        // if term is a prime implicant it is stored separately in list with head pointer improot
+        if(temp->isimplicant==1)        // if term is a prime implicant it is stored separately in list with head pointer impNode
         {
             i=0;
             for(i=0;i<columns/2;i++)
@@ -410,7 +405,7 @@ void showImpli()       //displays the implicants
 {
     int i=0;
     struct Node* temp;
-    temp=improot;
+    temp=impNode;
     printf("\n\nPrime Implicants : \n\n");
     while(temp!=NULL)
     {
@@ -442,22 +437,12 @@ void showImpli()       //displays the implicants
     }
 }
 
-void initial_implicants(struct Node* ptr)       //initializing each term as a prime implicant
-{
-    struct Node* temp;
-    temp=ptr;
-    while(temp!=NULL)
-    {
-        temp->isimplicant=1;
-        temp=temp->next;
-    }
-}
 
 void reduce()          //reduces the terms that occur more than once to a single
 {
     int common=0,i;
     struct Node *temp1,*temp2,*temp3;
-    temp1=temp2=improot;
+    temp1=temp2=impNode;
     while(temp1!=NULL)
     {
         temp2=temp1->next;
@@ -473,7 +458,7 @@ void reduce()          //reduces the terms that occur more than once to a single
             }
             if(common==var)
             {
-                temp3=improot;
+                temp3=impNode;
                 while(temp3->next!=temp2)      //the repeated term is deleted
                 {
                     temp3=temp3->next;
@@ -500,7 +485,7 @@ void changetoVar()          //it converts the binary notation of each term to va
 {
     int i,j;
     struct Node* temp;
-    temp=fin;
+    temp=last;
     while(temp!=NULL)
     {
         j=0;
@@ -509,14 +494,14 @@ void changetoVar()          //it converts the binary notation of each term to va
         {
             if(temp->bin[i]==0)
             {
-                temp->var[j]=a[i];
+                temp->abc[j]=a[i];
                 j++;
-                temp->var[j]=39;
+                temp->abc[j]=39;
                 j++;
             }
             if(temp->bin[i]==1)
             {
-                temp->var[j]=a[i];
+                temp->abc[j]=a[i];
                 j++;
             }
         }
@@ -524,14 +509,14 @@ void changetoVar()          //it converts the binary notation of each term to va
     }
 }
 
-void finalResult()         //displays the minimized function in SOP form
+void finalResult(struct Node* head)         //displays the minimized function in SOP form
 {
     struct Node* temp;
-    temp=fin;
+    temp=head;
     printf("\n\nF = ");
     while(temp!=NULL)
     {
-        printf("%s",temp->var);
+        printf("%s",temp->abc);
         if(temp->next!=NULL)
         {
             printf(" + ");
@@ -544,10 +529,10 @@ void finalResult()         //displays the minimized function in SOP form
 void showTable()         //function for creating prime implicants table as well as selecting essential prime implicants
 {
     struct Node* temp;
-    int i,j,k,m,n,x,y,count=0,count2=0,a=0;
+    int i,j,k,y,a=0;
     for(i=0;i<counter;i++)
     {
-        for(j=0;j<=limit;j++)
+        for(j=0;j<=maxMinterms;j++)
         {
             tab[i][j]=0;           //0 or - is placed in all places of a table
         }
@@ -555,7 +540,7 @@ void showTable()         //function for creating prime implicants table as well 
     i=0;
     j=0;
     k=0;
-    temp=improot;
+    temp=impNode;
     while(temp!=NULL)
     {
         k=0;
@@ -572,7 +557,7 @@ void showTable()         //function for creating prime implicants table as well 
         printf("\t");
     }
     printf("Prime Implicants Table\n\n\n");
-    temp=improot;
+    temp=impNode;
     i=0;
     printf(" ");
     while(minterms[i]!=-1)
@@ -595,7 +580,7 @@ void showTable()         //function for creating prime implicants table as well 
     {
         printf(" ");
         a=0;
-        for(j=0;j<=limit;j++)
+        for(j=0;j<=maxMinterms;j++)
         {
 
             if(j==minterms[a])
@@ -644,7 +629,7 @@ void implicant()     //after finding the essential prime implicants other terms 
     for(i=0;i<counter;i++)
     {
         count1=0;
-        for(j=0;j<=limit;j++)
+        for(j=0;j<=maxMinterms;j++)
         {
             if(tab[i][j]==1)       //no. of X's or 1's are calculated
             {
@@ -652,13 +637,13 @@ void implicant()     //after finding the essential prime implicants other terms 
                 count1++;
             }
         }
-        if(count1>count2)       //to find the term with maximum X's in a row
+        if(count1>count2)       //to find the term with maxMintermsimum X's in a row
         {
             essential[t]=i;
             count2=count1;
         }
     }
-    for(j=0;j<=limit;j++)           //removing the X's in the row as well a those X's which are in same column
+    for(j=0;j<=maxMinterms;j++)           //removing the X's in the row as well a those X's which are in same column
     {
         if(tab[essential[t]][j]==1)
         {
@@ -680,10 +665,10 @@ void finalNode()          //in this function all the terms in the minimized expr
 {
     int i=0,j,c=0,x;
     struct Node *temp,*ptr;
-    fin=temp=(struct Node*)malloc(sizeof(struct Node));
+    last=temp=(struct Node*)malloc(sizeof(struct Node));
     while(essential[i]!=-1)
     {
-        ptr=improot;
+        ptr=impNode;
         x=essential[i];
         for(j=0;j<x;j++)        //so that pointer points to the Node whose index was stored in array named essential
         {
@@ -709,3 +694,41 @@ void finalNode()          //in this function all the terms in the minimized expr
     temp->next=NULL;
 }
 
+int main()
+{
+    initial_var();
+    printf("=======================================================================================\n\n");
+    printf("\t\t\t\t Program Minimasi Logika\n\t\t\tdengan Menerapkan Algoritma Quine McCluskey\n\n");
+    printf("=======================================================================================\n");
+    printf("Ketentuan Input:\n");
+    printf("1.Jumlah variabel maksimal sebanyak 26\n2. Jumlah minterms maksimal sebanyak 2^variabel\n");
+    inputData();
+    new = NULL;
+    for(int o=0; o<min; o++){
+        sort(&new, &primeNode);
+    }
+    primeNode = new;
+
+    arrMinterms();
+    maxMinterms = minterms[min-1];
+    groupby();
+    simplificationTab();
+    removeLast(primeNode);
+    head=(struct Node*)malloc(sizeof(struct Node));
+    while(check>0)
+    {
+        groupMore();
+    }
+    save->next=NULL;           //storing null value in link field of list storing prime implicants
+    printf("Kalkulasi selesai\n\n");
+    removeLast(impNode);
+    reduce();
+    showImpli();
+    showTable();
+    implicant();
+    finalNode();
+    removeLast(last);
+    changetoVar();
+    finalResult(last);
+    return 0;
+}
