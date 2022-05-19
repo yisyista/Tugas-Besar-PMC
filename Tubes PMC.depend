@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1652940622 source:c:\users\kayyi\onedrive\documents\kuliah\sem4\ppmc\tugas besar\kode gabungan\tubes pmc\main.c
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+
