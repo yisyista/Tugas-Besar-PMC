@@ -9,14 +9,14 @@ struct Node
     struct Node* right;
 };
 
-struct Node *root,*head,*improot,*save,*fin;
+struct Node *root,*head,*improot,*save,*fin, *new;
 int var,min,number=1,columns=2,check=1,limit,imptable[100][100],counter=0,essential[1000],t=0,no=0,minterms[1000];
 char a[26],b[26];       //variable names are stored as alphabets, can be modified to work for more variables
 
 void groupby();          //the minterms are grouped according to the number of ones
 void sort();         //the minterms are sortd according t their magnitude
 void swap(struct Node*,struct Node*);           //data of two Nodes is swapped
-void showColumn();            //various column with pairings are displayed
+void simplificationTab();            //various column with pairings are displayed
 void groupMore();           //the minterms are paired
 void delNode(struct Node*);            //the extra Node in a list is deleted
 void showImpli();              //the implicants are displayed
@@ -29,6 +29,109 @@ void finalResult();                //the minimized function is displayed
 void implicant();        //the prime implicants other than the essential ones are collected
 void finalNode();     //the final terms in the minimized function are noted
 void saveMinterms();      //minterms are stored in an array
+
+
+//Fungsi Search Nilai Minimum dari Linked List
+int searchMin(struct Node* head){
+    int nilaiMin = 10000000;
+    while(head != NULL){
+        if (head->data[0] < nilaiMin){
+            nilaiMin = head->data[0];
+    }
+    head = head->right;
+
+}
+    return nilaiMin;
+}
+
+//Fungsi Search Index dari Nilai Minimum
+int searchIdxMin(struct Node* head){
+    int nilaiMin = 10000000;
+    int idxMin = 0;
+    int idx = 0;
+    while(head != NULL){
+        if (head->data[0] < nilaiMin){
+            nilaiMin = head->data[0];
+            idxMin = idx;
+    }
+    head = head->right;
+    idx+=1;
+}
+    return idxMin;
+}
+
+//Fungsi Delete Node Linked List Berdasarkan Posisi Tertentu
+void deleteNode(struct Node **head, int pos)
+{
+
+ if (*head == NULL){
+      return;
+ }
+
+   struct Node* temp = *head;
+    if (pos == 0){
+        *head = temp->right;
+        free(temp);
+        return;
+    }
+
+    for (int i=0; temp!=NULL && i<pos-1; i++){
+         temp = temp->right;
+    }
+
+    if (temp == NULL || temp->right == NULL){
+         return;
+    }
+
+    struct Node *next = temp->right->right;
+    free(temp->right);
+    temp->right = next;
+}
+
+//Fungsi Menambah Node pada Linked List Baru
+void add(struct Node **newHead, struct Node **oldHead){
+    struct Node *nodeBaru = (struct Node*)malloc(sizeof(struct Node));
+    struct Node *akhir = *newHead;
+    struct Node *temp = *oldHead;
+
+    for(int i=0; i<searchIdxMin(*oldHead); i++){
+            temp = temp->right;
+        }
+
+    nodeBaru->data[0] = temp->data[0];
+
+    nodeBaru->sumOne = temp->sumOne;
+
+    for(int m=0; m<var; m++){
+        nodeBaru->bin[m] = temp->bin[m];
+    }
+    deleteNode(oldHead, searchIdxMin(*oldHead));
+
+    nodeBaru->right = NULL;
+
+    if (*newHead == NULL){
+        *newHead = nodeBaru;
+        return;
+    }
+
+    while(akhir->right != NULL){
+        akhir = akhir->right;
+    }
+
+    akhir->right = nodeBaru;
+    return;
+}
+
+//Fungsi Print Linked List
+void print(struct Node* head){
+    struct Node* temp = head;
+    while(temp != NULL){
+        printf("%d ", temp->data[0]);
+        temp = temp->right;
+    }
+}
+
+///
 
 int main()
 {
@@ -88,10 +191,17 @@ int main()
 
     }
     temp->right=NULL;
-    sort();      //various functions are called according to their needs
+
+    new = NULL;
+    for(int o=0; o<min; o++){
+        add(&new, &root);
+    }
+    root = new;
+
     saveMinterms();
+    limit = minterms[min-1];
     groupby();
-    showColumn();
+    simplificationTab();
     delNode(root);
     head=(struct Node*)malloc(sizeof(struct Node));
     while(check>0)
@@ -196,13 +306,13 @@ void groupby()       //where the minterms are sortd according to the number of o
     next->right=NULL;
 }
 
-void showColumn()     //for displaying the various column with pairings
+void simplificationTab()     //for displaying the various column with pairings
 {
     int i,j=min;
     struct Node* temp;
     temp=root;
-    printf("\n\n  Kolom ke-%d\n",number); //number tells us which column is being printed
-    printf("--------------\n\n");
+    printf("\n\n  Tabel Penyederhanaan %d\n",number); //number tells us which column is being printed
+    printf("--------------------------\n\n");
     while(temp->right!=NULL)
     {
         printf("%d\t",temp->data[0]);
@@ -246,8 +356,8 @@ void groupMore()    //grouping based on difference in binary notation
     }
     temp=root;
     initial_implicants(root);
-    printf("\n\n  Kolom ke-%d\n",number); //number tells us which column is being printed
-    printf("--------------\n\n");
+    printf("\n\n  Tabel Penyederhanaan %d\n",number); //number tells us which column is being printed
+    printf("--------------------------\n\n");
     while(temp!=NULL)
     {
         next=temp->right;
@@ -423,7 +533,6 @@ void initial_var()            //stores variables(alphabets)
     for(i=0;i<26;i++)
     {
         a[i]=65+i;      //variables
-        b[i]=97+i;      //their compliments
     }
 }
 
@@ -440,10 +549,7 @@ void changetoVar()          //it converts the binary notation of each term to va
         {
             if(temp->bin[i]==0)
             {
-                //temp->var[j]=b[i];
                 temp->var[j]=a[i];
-                //printf("i=%d\n", i);
-                //printf("var[%d]=%d\n", j, b[i]);
                 j++;
                 temp->var[j]=39;
                 j++;
@@ -451,8 +557,6 @@ void changetoVar()          //it converts the binary notation of each term to va
             if(temp->bin[i]==1)
             {
                 temp->var[j]=a[i];
-                //printf("i=%d\n", i);
-                //printf("var[%d]=%d\n", j, a[i]);
                 j++;
             }
         }
@@ -464,7 +568,7 @@ void finalResult()         //displays the minimized function in SOP form
 {
     struct Node* temp;
     temp=fin;
-    printf("\n\nThe minimized function is : ");
+    printf("\n\nF = ");
     while(temp!=NULL)
     {
         printf("%s",temp->var);
@@ -525,14 +629,18 @@ void showTable()         //function for creating prime implicants table as well 
     }
 
     printf("\n\n");
+
+
     for(i=0;i<counter;i++)          //X and - are placed for the terms with corresponding minterm values
     {
         printf(" ");
         a=0;
         for(j=0;j<=limit;j++)
         {
+
             if(j==minterms[a])
             {
+                //printf("checkpoint5!!\n\n");
                 if(imptable[i][j]==0)
                 {
                     printf("-");
@@ -566,46 +674,6 @@ void showTable()         //function for creating prime implicants table as well 
 
     }
     printf("\n\n");
-
-
-    /*
-    for(i=0;i<counter;i++)      //for finding essential prime implicants
-    {
-        for(j=0;j<=limit;j++)
-        {
-            count=0;
-            if(imptable[i][j]==1)
-            {
-                y=j;
-                x=i;
-                for(k=0;k<counter;k++)
-                {
-                    if(imptable[k][j]==1)       //checks if there is only one X in a column
-                    {
-                        count++;
-                    }
-                }
-                if(count==1)  //places - in place of X in every column of the table whose one row contains only one X in a column
-                {
-                    essential[t]=x;
-                    t++;
-                    for(n=0;n<=limit;n++)
-                    {
-                        if(imptable[i][n]==1)
-                        {
-                            for(m=0;m<counter;m++)
-                            {
-                                imptable[m][n]=0;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    essential[t]=-1;
-    i=0;
-    */
 }
 
 void implicant()     //after finding the essential prime implicants other terms necessary are marked
@@ -668,14 +736,11 @@ void finalNode()          //in this function all the terms in the minimized expr
             j++;
         }
         temp->data[j]=-1;
-        //printf("Isi binary yg baru\n");
         int k=0;
         for(j=var-1;j>=0;j--)          //the binary code is stored
         {
             temp->bin[j]=ptr->bin[k];
             k++;
-            //printf("j:%d", j);
-            //printf("bin[%d] = %d\n", j, ptr->bin[j]);
         }
         temp=temp->right=(struct Node*)malloc(sizeof(struct Node));
         i++;
@@ -683,3 +748,4 @@ void finalNode()          //in this function all the terms in the minimized expr
     }
     temp->right=NULL;
 }
+
