@@ -287,7 +287,7 @@ void removeLast(struct Node* ptr)         //reducing the number of Nodes in a li
     temp->next=NULL;
 }
 
-void groupMore()    //grouping based on difference in binary notation
+void compare()    //grouping based on difference in binary notation
 {
     int i,count,k,j,x;
     struct Node *temp,*skip,*p,*imp;
@@ -711,7 +711,7 @@ int main()
     head=(struct Node*)malloc(sizeof(struct Node));
     while(check>0)
     {
-        groupMore();
+        compare();
     }
     save->next=NULL;           //storing null value in link field of list storing prime implicants
     printf("Kalkulasi selesai\n\n");
