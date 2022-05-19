@@ -5,7 +5,7 @@
 struct Node
 {
     int data[257], bin[26], sumOne, isimplicant;
-    char term[26];
+    char var[26];
     struct Node* right;
 };
 
@@ -16,19 +16,19 @@ char a[26],b[26];       //variable names are stored as alphabets, can be modifie
 void groupby();          //the minterms are grouped according to the number of ones
 void sort();         //the minterms are sortd according t their magnitude
 void swap(struct Node*,struct Node*);           //data of two Nodes is swapped
-void disp();            //various column with pairings are displayed
+void showColumn();            //various column with pairings are displayed
 void groupMore();           //the minterms are paired
 void delNode(struct Node*);            //the extra Node in a list is deleted
-void display_implicants();              //the implicants are displayed
-void implicants(struct Node*);          //initializes each term as an implicant
-void collect();                 //converts the term from binary notation to variables
-void variables();       //the variables for the function are stored
-void convert();             //reduces the prime implicants which occur more than once to one
-void implicants_table();        //the prime implicants table is formed and essential implicants are found
-void func();                //the minimized function is displayed
-void other_implicants();        //the prime implicants other than the essential ones are collected
-void final_terms();     //the final terms in the minimized function are noted
-void store_minterms();      //minterms are stored in an array
+void showImpli();              //the implicants are displayed
+void initial_implicants(struct Node*);          //initializes each term as an implicant
+void reduce();                 //converts the term from binary notation to variables
+void initial_var();       //the variables for the function are stored
+void changetoVar();             //reduces the prime implicants which occur more than once to one
+void showTable();        //the prime implicants table is formed and essential implicants are found
+void finalResult();                //the minimized function is displayed
+void implicant();        //the prime implicants other than the essential ones are collected
+void finalNode();     //the final terms in the minimized function are noted
+void saveMinterms();      //minterms are stored in an array
 
 int main()
 {
@@ -89,9 +89,9 @@ int main()
     }
     temp->right=NULL;
     sort();      //various functions are called according to their needs
-    store_minterms();
+    saveMinterms();
     groupby();
-    disp();
+    showColumn();
     delNode(root);
     head=(struct Node*)malloc(sizeof(struct Node));
     while(check>0)
@@ -101,15 +101,15 @@ int main()
     save->right=NULL;           //storing null value in link field of list storing prime implicants
     printf("No pairs formed hence no further calculation required\n\n");
     delNode(improot);
-    collect();
-    display_implicants();
-    variables();
-    implicants_table();
-    other_implicants();
-    final_terms();
+    reduce();
+    showImpli();
+    initial_var();
+    showTable();
+    implicant();
+    finalNode();
     delNode(fin);
-    convert();
-    func();
+    changetoVar();
+    finalResult();
     return 0;
 }
 
@@ -136,7 +136,7 @@ void sort()          //arranging the minterms in increasing order of magnitude
     }
 }
 
-void store_minterms()       //array to store all the minterms
+void saveMinterms()       //array to store all the minterms
 {
     int i=0;
     struct Node* temp;
@@ -196,7 +196,7 @@ void groupby()       //where the minterms are sortd according to the number of o
     next->right=NULL;
 }
 
-void disp()     //for displaying the various column with pairings
+void showColumn()     //for displaying the various column with pairings
 {
     int i,j=min;
     struct Node* temp;
@@ -244,7 +244,7 @@ void groupMore()    //grouping based on difference in binary notation
         p=head=(struct Node*)malloc(sizeof(struct Node));
     }
     temp=root;
-    implicants(root);
+    initial_implicants(root);
     printf("\n\nColumn #%d\n\n\n",number);
     while(temp!=NULL)
     {
@@ -334,7 +334,7 @@ void groupMore()    //grouping based on difference in binary notation
     number++;
 }
 
-void display_implicants()       //displays the implicants
+void showImpli()       //displays the implicants
 {
     int i=0;
     struct Node* temp;
@@ -370,7 +370,7 @@ void display_implicants()       //displays the implicants
     }
 }
 
-void implicants(struct Node* ptr)       //initializing each term as a prime implicant
+void initial_implicants(struct Node* ptr)       //initializing each term as a prime implicant
 {
     struct Node* temp;
     temp=ptr;
@@ -381,7 +381,7 @@ void implicants(struct Node* ptr)       //initializing each term as a prime impl
     }
 }
 
-void collect()          //reduces the terms that occur more than once to a single
+void reduce()          //reduces the terms that occur more than once to a single
 {
     int common=0,i;
     struct Node *temp1,*temp2,*temp3;
@@ -415,7 +415,7 @@ void collect()          //reduces the terms that occur more than once to a singl
     }
 }
 
-void variables()            //stores variables(alphabets)
+void initial_var()            //stores variables(alphabets)
 {
     int i;
     for(i=0;i<26;i++)
@@ -425,7 +425,7 @@ void variables()            //stores variables(alphabets)
     }
 }
 
-void convert()          //it converts the binary notation of each term to variables
+void changetoVar()          //it converts the binary notation of each term to variables
 {
     int i,j;
     struct Node* temp;
@@ -438,19 +438,19 @@ void convert()          //it converts the binary notation of each term to variab
         {
             if(temp->bin[i]==0)
             {
-                //temp->term[j]=b[i];
-                temp->term[j]=a[i];
+                //temp->var[j]=b[i];
+                temp->var[j]=a[i];
                 //printf("i=%d\n", i);
-                //printf("term[%d]=%d\n", j, b[i]);
+                //printf("var[%d]=%d\n", j, b[i]);
                 j++;
-                temp->term[j]=39;
+                temp->var[j]=39;
                 j++;
             }
             if(temp->bin[i]==1)
             {
-                temp->term[j]=a[i];
+                temp->var[j]=a[i];
                 //printf("i=%d\n", i);
-                //printf("term[%d]=%d\n", j, a[i]);
+                //printf("var[%d]=%d\n", j, a[i]);
                 j++;
             }
         }
@@ -458,14 +458,14 @@ void convert()          //it converts the binary notation of each term to variab
     }
 }
 
-void func()         //displays the minimized function in SOP form
+void finalResult()         //displays the minimized function in SOP form
 {
     struct Node* temp;
     temp=fin;
     printf("\n\nThe minimized function is : ");
     while(temp!=NULL)
     {
-        printf("%s",temp->term);
+        printf("%s",temp->var);
         if(temp->right!=NULL)
         {
             printf(" + ");
@@ -475,7 +475,7 @@ void func()         //displays the minimized function in SOP form
     printf("\n\n");
 }
 
-void implicants_table()         //function for creating prime implicants table as well as selecting essential prime implicants
+void showTable()         //function for creating prime implicants table as well as selecting essential prime implicants
 {
     struct Node* temp;
     int i,j,k,m,n,x,y,count=0,count2=0,a=0;
@@ -606,7 +606,7 @@ void implicants_table()         //function for creating prime implicants table a
     */
 }
 
-void other_implicants()     //after finding the essential prime implicants other terms necessary are marked
+void implicant()     //after finding the essential prime implicants other terms necessary are marked
 {
     no=0;           //to check if any term is found in each iteration
     int count1=0,count2=0;
@@ -642,11 +642,11 @@ void other_implicants()     //after finding the essential prime implicants other
     essential[t]=-1;
     if(no>0)            //if one or more terms is found the function is called again otherwise not
     {
-        other_implicants();
+        implicant();
     }
 }
 
-void final_terms()          //in this function all the terms in the minimized expression are stored in a linked list
+void finalNode()          //in this function all the terms in the minimized expression are stored in a linked list
 {
     int i=0,j,c=0,x;
     struct Node *temp,*ptr;
